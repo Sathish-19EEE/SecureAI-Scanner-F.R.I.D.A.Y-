@@ -242,7 +242,7 @@ async function startScan() {
   }
 
   try {
-    const res = await fetch('http://localhost:5000/scan', {
+    const res = await fetch('https://secureai-scanner.onrender.com', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({url})
