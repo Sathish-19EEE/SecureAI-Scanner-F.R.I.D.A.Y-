@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>SecureAI Scanner v3.0</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#06080f;color:#e0e0e0;font-family:'Segoe UI',sans-serif;min-height:100vh;}
+
+    /* ── NAVBAR ── */
+    .navbar{background:#0a0d16;border-bottom:1px solid #00ff8844;padding:14px 30px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+    .brand{font-size:1.4rem;font-weight:900;color:#00ff88;letter-spacing:2px;}
+    .brand span{color:#4499ff;}
+    .proto-pills{display:flex;gap:8px;flex-wrap:wrap;}
+    .proto-pill{background:#ffffff08;border:1px solid #ffffff18;color:#aaa;padding:3px 10px;border-radius:20px;font-size:0.7rem;}
+    .proto-pill.active{background:#00ff8818;border-color:#00ff8866;color:#00ff88;}
+
+    /* ── HERO ── */
+    .hero{background:linear-gradient(160deg,#06080f 0%,#0a1428 50%,#06080f 100%);padding:55px 20px 35px;text-align:center;border-bottom:1px solid #ffffff08;}
+    .hero h1{font-size:3.2rem;font-weight:900;background:linear-gradient(135deg,#00ff88,#4499ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+    .hero .tagline{color:#888;font-size:1rem;margin-bottom:6px;}
+    .hero .version{color:#4499ff;font-size:0.85rem;font-weight:600;}
+
+    /* ── SCAN BOX ── */
+    .scan-wrapper{max-width:820px;margin:35px auto;padding:0 20px;}
+    .scan-box{background:#0e1420;border:1px solid #1e2d40;border-radius:18px;padding:36px;box-shadow:0 0 60px rgba(0,255,136,0.06);}
+    .scan-box h4{color:#00ff88;margin-bottom:22px;font-weight:700;font-size:1.1rem;}
+    .form-control{background:#06080f!important;border:1px solid #1e2d40!important;color:#fff!important;padding:15px 20px;font-size:1rem;border-radius:12px 0 0 12px!important;transition:border 0.2s;caret-color:transparent;}
+    .form-control:focus{border-color:#00ff88!important;box-shadow:0 0 0 3px rgba(0,255,136,0.12)!important;}
+    .btn-scan{background:linear-gradient(135deg,#00ff88,#00cc6a);color:#000;font-weight:800;padding:15px 28px;border:none;border-radius:0 12px 12px 0;cursor:pointer;font-size:1rem;transition:all 0.3s;white-space:nowrap;}
+    .btn-scan:hover{filter:brightness(1.1);transform:scale(1.02);}
+    .btn-scan:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+    /* ── PROGRESS ── */
+    .progress-section{display:none;margin-top:28px;}
+    .protocol-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+    .proto-step{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#ffffff05;border-radius:10px;border:1px solid #ffffff08;transition:all 0.3s;}
+    .proto-step.running{background:#00ff8808;border-color:#00ff8830;}
+    .proto-step.done{background:#4499ff08;border-color:#4499ff30;}
+    .proto-step .step-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;background:#ffffff10;}
+    .proto-step.running .step-icon{background:#00ff8820;color:#00ff88;animation:pulse 1s infinite;}
+    .proto-step.done .step-icon{background:#4499ff20;color:#4499ff;}
+    .proto-step .step-name{font-size:0.88rem;color:#aaa;}
+    .proto-step.running .step-name{color:#00ff88;}
+    .proto-step.done .step-name{color:#4499ff;}
+    .progress{height:6px;background:#ffffff0a;border-radius:10px;margin-top:10px;}
+    .progress-bar{background:linear-gradient(90deg,#00ff88,#4499ff);border-radius:10px;transition:width 0.5s;}
+
+    /* ── RESULTS ── */
+    .results-wrapper{display:none;max-width:1100px;margin:0 auto 60px;padding:0 20px;}
+
+    /* NLP CONTEXT BOX */
+    .nlp-box{background:linear-gradient(135deg,#0a1428,#0d1e35);border:1px solid #4499ff44;border-radius:14px;padding:22px;margin-bottom:24px;}
+    .nlp-title{color:#4499ff;font-weight:700;margin-bottom:12px;font-size:0.95rem;}
+    .nlp-context{color:#cce4ff;font-size:0.9rem;margin-bottom:12px;line-height:1.6;}
+    .nlp-tags{display:flex;flex-wrap:wrap;gap:8px;}
+    .nlp-tag{background:#4499ff18;border:1px solid #4499ff44;color:#88ccff;padding:3px 12px;border-radius:20px;font-size:0.75rem;}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+    .stat-card{background:#0e1420;border:1px solid #1e2d40;border-radius:14px;padding:20px;text-align:center;}
+    .stat-num{font-size:2rem;font-weight:900;}
+    .stat-label{color:#666;font-size:0.78rem;margin-top:4px;}
+
+    /* RISK METER */
+    .risk-meter{background:#0e1420;border:1px solid #1e2d40;border-radius:16px;padding:28px;text-align:center;margin-bottom:24px;}
+    .risk-score-big{font-size:5.5rem;font-weight:900;line-height:1;}
+    .risk-CRITICAL{color:#ff0044;text-shadow:0 0 30px rgba(255,0,68,0.5);}
+    .risk-HIGH{color:#ff4444;text-shadow:0 0 30px rgba(255,68,68,0.4);}
+    .risk-MEDIUM{color:#ffaa00;text-shadow:0 0 30px rgba(255,170,0,0.4);}
+    .risk-LOW{color:#00ff88;text-shadow:0 0 30px rgba(0,255,136,0.4);}
+    .risk-summary-text{color:#aaa;font-size:0.9rem;margin-top:8px;max-width:600px;margin-left:auto;margin-right:auto;}
+
+    /* FRAMEWORKS BAR */
+    .frameworks-bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+    .fw-badge{background:#ffffff08;border:1px solid #ffffff18;color:#888;padding:4px 14px;border-radius:20px;font-size:0.75rem;}
+
+    /* ATTACK CHAIN */
+    .attack-chain-section{background:#0e1420;border:1px solid #ff004433;border-radius:16px;padding:24px;margin-bottom:24px;}
+    .attack-chain-title{color:#ff4444;font-weight:700;margin-bottom:20px;font-size:1rem;}
+    .chain-step{display:flex;gap:16px;margin-bottom:16px;align-items:flex-start;}
+    .chain-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.85rem;flex-shrink:0;color:#fff;}
+    .chain-num.ALWAYS_OCCURS{background:#666;}
+    .chain-num.HIGH_RISK{background:#ff6600;}
+    .chain-num.CRITICAL{background:#ff0044;}
+    .chain-num.MAXIMUM_DAMAGE{background:#990000;}
+    .chain-content{flex:1;}
+    .chain-phase-title{color:#fff;font-weight:700;font-size:0.9rem;}
+    .chain-time{color:#666;font-size:0.75rem;margin-bottom:4px;}
+    .chain-action{color:#ccc;font-size:0.85rem;line-height:1.5;margin-bottom:6px;}
+    .chain-tools{display:flex;gap:8px;flex-wrap:wrap;}
+    .tool-badge{background:#ff000018;border:1px solid #ff000033;color:#ff8888;padding:2px 10px;border-radius:12px;font-size:0.72rem;}
+    .mitre-badge{background:#ffaa0018;border:1px solid #ffaa0033;color:#ffcc66;padding:2px 10px;border-radius:12px;font-size:0.72rem;}
+    .chain-connector{width:2px;height:20px;background:linear-gradient(#ff4444,#ff000033);margin-left:17px;}
+
+    /* VULN CARDS */
+    .section-header{color:#00ff88;font-weight:700;font-size:1rem;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+    .vuln-card{background:#0e1420;border:1px solid #1e2d40;border-radius:14px;padding:22px;margin-bottom:16px;transition:transform 0.2s,box-shadow 0.2s;position:relative;overflow:hidden;}
+    .vuln-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.3);}
+    .vuln-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;}
+    .vuln-card.CRITICAL::before{background:#ff0044;}
+    .vuln-card.HIGH::before{background:#ff4444;}
+    .vuln-card.MEDIUM::before{background:#ffaa00;}
+    .vuln-card.LOW::before{background:#00ff88;}
+    .vuln-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+    .vuln-title{color:#fff;font-weight:700;font-size:0.95rem;}
+    .badges-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .sev-badge{padding:3px 12px;border-radius:20px;font-size:0.72rem;font-weight:800;}
+    .sev-CRITICAL{background:#ff0044;color:#fff;}
+    .sev-HIGH{background:#ff4444;color:#fff;}
+    .sev-MEDIUM{background:#ffaa00;color:#000;}
+    .sev-LOW{background:#00ff88;color:#000;}
+    .owasp-badge{background:#ffffff10;color:#aaa;padding:3px 10px;border-radius:12px;font-size:0.7rem;}
+    .cvss-badge{background:#4499ff18;color:#88ccff;padding:3px 10px;border-radius:12px;font-size:0.7rem;border:1px solid #4499ff33;}
+    .ai-badge{background:#aa44ff18;color:#cc88ff;padding:3px 10px;border-radius:12px;font-size:0.7rem;border:1px solid #aa44ff33;}
+    .vuln-desc{color:#bbb;font-size:0.87rem;line-height:1.6;margin-bottom:10px;}
+    .impact-box{background:#1a0a0a;border:1px solid #ff444422;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:0.83rem;color:#ff9999;}
+    .fix-box{background:#0a1a0a;border:1px solid #00ff8822;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:0.83rem;color:#88ff88;}
+    .mitigation-box{background:#0a0f1a;border:1px solid #4499ff22;border-radius:8px;padding:14px;margin-bottom:10px;}
+    .mit-title{color:#4499ff;font-weight:700;font-size:0.83rem;margin-bottom:10px;}
+    .mit-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+    .mit-num{background:#4499ff;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;flex-shrink:0;margin-top:1px;}
+    .mit-text{color:#aaccff;font-size:0.82rem;line-height:1.5;}
+    .ref-text{color:#555;font-size:0.75rem;font-style:italic;margin-top:8px;}
+
+    /* REPORT BUTTON */
+    .report-btn{background:linear-gradient(135deg,#ff4444,#cc0000);color:#fff;border:none;padding:16px;border-radius:14px;font-weight:800;cursor:pointer;font-size:1rem;width:100%;margin-top:10px;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:10px;}
+    .report-btn:hover{filter:brightness(1.1);transform:translateY(-2px);}
+
+    /* ANIMATIONS */
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .fade-in{animation:fadeIn 0.4s ease forwards;}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="brand"><i class="fas fa-shield-alt"></i> Secure<span>AI</span></div>
+  <div class="proto-pills">
+    <span class="proto-pill active">NLP Engine</span>
+    <span class="proto-pill active">AI Behavioral</span>
+    <span class="proto-pill active">MITRE ATT&amp;CK</span>
+    <span class="proto-pill active">Attack Chain</span>
+    <span class="proto-pill active">CVE Scanner</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1><i class="fas fa-shield-alt"></i> SecureAI</h1>
+  <p class="tagline">Intelligent Web Vulnerability Detection Platform</p>
+  <p class="version">v3.0 · NLP + AI Behavioral Engine + Attack Chain Reconstructor</p>
+</div>
+
+<!-- SCAN BOX -->
+<div class="scan-wrapper">
+  <div class="scan-box">
+    <h4><i class="fas fa-radar"></i>&nbsp; Start Intelligent Security Scan</h4>
+    <div class="input-group">
+      <input type="text" class="form-control" id="urlInput"
+        placeholder="Enter target URL  (e.g. http://example.com/login)"
+        value="http://testbank.com/admin/login"/>
+      <button class="btn-scan" id="scanBtn" onclick="startScan()">
+        <i class="fas fa-bolt"></i>&nbsp;SCAN
+      </button>
+    </div>
+
+    <!-- PROTOCOL PROGRESS -->
+    <div class="progress-section" id="progressSection">
+      <div class="protocol-steps" id="protocolSteps">
+        <div class="proto-step" id="step0"><div class="step-icon"><i class="fas fa-brain"></i></div><div class="step-name">NLP Semantic Analysis — Tokenizing URL context</div></div>
+        <div class="proto-step" id="step1"><div class="step-icon"><i class="fas fa-bug"></i></div><div class="step-name">Traditional CVE Scanner — SQLi, XSS, CSRF, IDOR</div></div>
+        <div class="proto-step" id="step2"><div class="step-icon"><i class="fas fa-eye"></i></div><div class="step-name">AI Behavioral Engine — Hidden hacker pattern detection</div></div>
+        <div class="proto-step" id="step3"><div class="step-icon"><i class="fas fa-sitemap"></i></div><div class="step-name">MITRE ATT&amp;CK Mapper — Technique classification</div></div>
+        <div class="proto-step" id="step4"><div class="step-icon"><i class="fas fa-link"></i></div><div class="step-name">Attack Chain Reconstructor — Hacker journey mapping</div></div>
+        <div class="proto-step" id="step5"><div class="step-icon"><i class="fas fa-file-alt"></i></div><div class="step-name">Insight Engine — Risk scoring & report generation</div></div>
+      </div>
+      <div class="progress"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="results-wrapper" id="resultsWrapper">
+
+  <!-- NLP ANALYSIS -->
+  <div class="nlp-box fade-in" id="nlpBox"></div>
+
+  <!-- STATS -->
+  <div class="stats-grid fade-in" id="statsGrid"></div>
+
+  <!-- RISK METER -->
+  <div class="risk-meter fade-in" id="riskMeter"></div>
+
+  <!-- ATTACK CHAIN -->
+  <div class="attack-chain-section fade-in" id="attackChain"></div>
+
+  <!-- VULNERABILITIES -->
+  <div class="section-header fade-in">
+    <i class="fas fa-bug"></i> Detected Vulnerabilities & Mitigation Guide
+  </div>
+  <div id="vulnList"></div>
+
+  <!-- REPORT -->
+  <button class="report-btn" onclick="downloadReport()">
+    <i class="fas fa-file-pdf"></i> Download Full SecureAI Security Report
+  </button>
+
+</div>
+
+<script>
+let lastData = null;
+
+async function startScan() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) { alert('URL enter pannunga!'); return; }
+
+  document.getElementById('scanBtn').disabled = true;
+  document.getElementById('progressSection').style.display = 'block';
+  document.getElementById('resultsWrapper').style.display = 'none';
+
+  // Reset steps
+  for (let i = 0; i < 6; i++) {
+    document.getElementById('step'+i).className = 'proto-step';
+    document.getElementById('step'+i).querySelector('.step-icon').innerHTML = getStepIcon(i);
+  }
+
+  const stepNames = ['NLP Analysis','CVE Scanning','AI Behavioral','MITRE Mapping','Attack Chain','Report Gen'];
+
+  for (let i = 0; i < 6; i++) {
+    document.getElementById('step'+i).className = 'proto-step running';
+    document.getElementById('step'+i).querySelector('.step-icon').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    document.getElementById('progressBar').style.width = ((i+1)/6*85)+'%';
+    await sleep(700);
+    document.getElementById('step'+i).className = 'proto-step done';
+    document.getElementById('step'+i).querySelector('.step-icon').innerHTML = '<i class="fas fa-check"></i>';
+  }
+
+  try {
+    const res = await fetch('http://localhost:5000/scan', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url})
+    });
+    const data = await res.json();
+    lastData = data;
+    document.getElementById('progressBar').style.width = '100%';
+    await sleep(400);
+    renderResults(data);
+  } catch(e) {
+    alert('❌ Backend connect aagala! PowerShell-la: python app.py running-a check pannunga!');
+  }
+  document.getElementById('scanBtn').disabled = false;
+}
+
+function getStepIcon(i) {
+  const icons = ['fa-brain','fa-bug','fa-eye','fa-sitemap','fa-link','fa-file-alt'];
+  return `<i class="fas ${icons[i]}"></i>`;
+}
+
+function renderResults(d) {
+  document.getElementById('resultsWrapper').style.display = 'block';
+
+  const nlp = d.nlp_analysis || {};
+  const tags = (nlp.nlp_tags || []).map(t => `<span class="nlp-tag">${t}</span>`).join('');
+  document.getElementById('nlpBox').innerHTML = `
+    <div class="nlp-title"><i class="fas fa-brain"></i>&nbsp; NLP Semantic Analysis Result</div>
+    <div class="nlp-context"><strong>Context:</strong> ${nlp.semantic_context || 'Standard web application'}</div>
+    <div class="nlp-context"><strong>App Type:</strong> ${(nlp.app_type||'generic').toUpperCase()} &nbsp;|&nbsp; <strong>Risk Amplifier:</strong> ×${nlp.risk_amplifier||1.0}</div>
+    <div class="nlp-tags">${tags || '<span class="nlp-tag">No special tokens detected</span>'}</div>
+  `;
+
+  const sb = d.severity_breakdown || {};
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-num" style="color:#00ff88">${d.total_vulnerabilities||0}</div><div class="stat-label">Total Issues</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#ff0044">${sb.CRITICAL||0}</div><div class="stat-label">Critical</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#ff4444">${sb.HIGH||0}</div><div class="stat-label">High</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#ffaa00">${sb.MEDIUM||0}</div><div class="stat-label">Medium</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#4499ff">${(d.attack_chain||[]).length}</div><div class="stat-label">Attack Steps</div></div>
+  `;
+
+  const rl = d.risk_level||'HIGH';
+  const fw = (d.frameworks_used||[]).map(f=>`<span class="fw-badge">${f}</span>`).join('');
+  document.getElementById('riskMeter').innerHTML = `
+    <p style="color:#555;font-size:0.8rem;margin-bottom:8px">OVERALL RISK SCORE</p>
+    <div class="risk-score-big risk-${rl}">${d.risk_score}</div>
+    <div class="risk-${rl}" style="font-weight:800;font-size:1.1rem;margin-top:8px">${rl} RISK</div>
+    <div class="risk-summary-text">${d.risk_summary||''}</div>
+    <div class="frameworks-bar">${fw}</div>
+  `;
+
+  // Attack Chain
+  const chain = d.attack_chain || [];
+  let chainHTML = `<div class="attack-chain-title"><i class="fas fa-skull"></i>&nbsp; Hacker Attack Chain Reconstruction</div>`;
+  chain.forEach((step, i) => {
+    const tools = (step.tools_used||'').split(',').map(t=>`<span class="tool-badge">${t.trim()}</span>`).join('');
+    chainHTML += `
+      <div class="chain-step">
+        <div class="chain-num ${step.status}">${step.phase}</div>
+        <div class="chain-content">
+          <div class="chain-time">${step.time_estimate}</div>
+          <div class="chain-phase-title">${step.title}</div>
+          <div class="chain-action">${step.hacker_action}</div>
+          <div class="chain-tools">${tools}<span class="mitre-badge">${step.mitre}</span></div>
+        </div>
+      </div>
+      ${i < chain.length-1 ? '<div class="chain-connector"></div>' : ''}
+    `;
+  });
+  document.getElementById('attackChain').innerHTML = chainHTML;
+
+  // Vulnerabilities
+  const vulns = d.vulnerabilities || [];
+  let vulnHTML = '';
+  vulns.forEach(v => {
+    const isAI = (v.detected_by || '').includes('Behavioral');
+    const steps = (v.mitigation_steps||[]).map((s,i)=>`
+      <div class="mit-step">
+        <div class="mit-num">${i+1}</div>
+        <div class="mit-text">${s.replace(/^Step \d+:\s*/,'')}</div>
+      </div>`).join('');
+
+    vulnHTML += `
+      <div class="vuln-card ${v.severity} fade-in">
+        <div class="vuln-header">
+          <div class="vuln-title">${v.type}</div>
+          <div class="badges-row">
+            <span class="sev-badge sev-${v.severity}">${v.severity}</span>
+            ${v.cvss_score ? `<span class="cvss-badge">CVSS ${v.cvss_score}</span>` : ''}
+            ${v.owasp ? `<span class="owasp-badge">${v.owasp.split(' ')[0]}</span>` : ''}
+            ${isAI ? '<span class="ai-badge"><i class="fas fa-robot"></i> AI Detected</span>' : ''}
+          </div>
+        </div>
+        <div class="vuln-desc">${v.description}</div>
+        ${v.mitre_technique ? `<div style="color:#ffcc66;font-size:0.78rem;margin-bottom:8px"><i class="fas fa-crosshairs"></i> ${v.mitre_technique}</div>` : ''}
+        <div class="impact-box"><i class="fas fa-exclamation-triangle"></i> <strong>Impact:</strong> ${v.impact}</div>
+        <div class="fix-box"><i class="fas fa-wrench"></i> <strong>Quick Fix:</strong> ${v.fix}</div>
+        <div class="mitigation-box">
+          <div class="mit-title"><i class="fas fa-list-check"></i>&nbsp; Step-by-Step Mitigation Guide</div>
+          ${steps}
+        </div>
+        <div class="ref-text"><i class="fas fa-book"></i> ${v.references}</div>
+      </div>`;
+  });
+  document.getElementById('vulnList').innerHTML = vulnHTML;
+
+  window.scrollTo({top: document.getElementById('nlpBox').offsetTop - 20, behavior:'smooth'});
+}
+
+function downloadReport() {
+  if (!lastData) return;
+  const d = lastData;
+  let r = `SECUREAI SECURITY REPORT v3.0\n${'='.repeat(60)}\n\n`;
+  r += `Target URL   : ${d.url}\n`;
+  r += `Scan Time    : ${d.scan_time}\n`;
+  r += `Risk Score   : ${d.risk_score}/100 (${d.risk_level} RISK)\n`;
+  r += `Total Issues : ${d.total_vulnerabilities}\n`;
+  r += `Protocols    : ${(d.protocols_used||[]).join(', ')}\n\n`;
+  r += `NLP ANALYSIS\n${'-'.repeat(40)}\n`;
+  r += `Context: ${d.nlp_analysis?.semantic_context}\n`;
+  r += `Tags: ${(d.nlp_analysis?.nlp_tags||[]).join(', ')}\n\n`;
+  r += `ATTACK CHAIN\n${'-'.repeat(40)}\n`;
+  (d.attack_chain||[]).forEach(s => {
+    r += `Phase ${s.phase}: ${s.title} (${s.time_estimate})\n  ${s.hacker_action}\n  MITRE: ${s.mitre}\n\n`;
+  });
+  r += `VULNERABILITIES\n${'-'.repeat(40)}\n`;
+  (d.vulnerabilities||[]).forEach((v,i) => {
+    r += `\n${i+1}. ${v.type} [${v.severity}] CVSS:${v.cvss_score||'N/A'}\n`;
+    r += `   ${v.description}\n`;
+    r += `   Impact: ${v.impact}\n`;
+    r += `   Fix: ${v.fix}\n`;
+    r += `   Mitigation:\n`;
+    (v.mitigation_steps||[]).forEach(s => { r += `      - ${s}\n`; });
+    r += `   Reference: ${v.references}\n`;
+  });
+  r += `\n${'='.repeat(60)}\nGenerated by SecureAI Scanner v3.0 | Flarenet Company\n`;
+
+  const blob = new Blob([r], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `SecureAI_Report_${Date.now()}.txt`;
+  a.click();
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+</script>
+</body>
+</html>
